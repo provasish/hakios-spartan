@@ -1,0 +1,6 @@
+# LF in the repository and in every checkout: the build's shell scripts do not survive CRLF
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.txt text eol=crlf
+*.dtb binary
+*.img binary

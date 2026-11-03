@@ -1,0 +1,60 @@
+HakiOS on the realme GT Neo 3T (RMX3371, "spartan") - test bundle
+====================================================================
+
+What this is
+  HakiOS boots Apple's open-source Darwin kernel (XNU) on Android phones. This bundle tests the first two steps of
+  the port to the GT Neo 3T. Everything runs from RAM with "fastboot boot": NOTHING IS FLASHED, and the phone goes back
+  to Android afterwards.
+
+You need
+  - a realme GT Neo 3T (RMX3371) with an UNLOCKED bootloader (root is not needed)
+  - battery above 60% (nothing charges the phone during the test)
+  - a PC with Google's platform-tools (fastboot) on the PATH
+  - Windows only: if U-Boot does not show up in "fastboot devices", install the Google USB driver
+
+First, check your board (Android running, USB debugging on):
+      adb shell getprop ro.boot.prjname
+  It should say 21732. If it says anything else, STOP and tell us the number first.
+
+Put the phone in fastboot mode: power off, then hold POWER + VOLUME DOWN, connect USB.
+
+Stage 1: U-Boot alone (about 1 minute)
+  Windows:        powershell -ExecutionPolicy Bypass -File test-spartan.ps1 1
+  Linux / macOS:  bash test-spartan.sh 1
+  Expected: text on the phone's screen ending in "HakiOS: waiting for the host". Take a photo of the screen.
+  The script saves U-Boot's log, then (when you press Enter) sends the phone back to Android.
+
+Stage 2: the HakiOS loader + the open kernel's "hello" (about 2 minutes)
+  Put the phone in fastboot mode again, then:
+  Windows:        powershell -ExecutionPolicy Bypass -File test-spartan.ps1 2
+  Linux / macOS:  bash test-spartan.sh 2
+  Expected: "SUCCESS: Hello from user space on Darwin!" in the script's output.
+  The script fetches the loader's and the kernel's logs and a screenshot, then sends the phone back to Android.
+  A "panic: initproc failed to start" in the log right after the hello is EXPECTED: hello is the only program and
+  exits, which Darwin answers with a panic, and the loader takes the phone back.
+
+  Windows, the first time: the HakiOS loader is a new USB device ("xnuloader"), and Windows may have no driver for it.
+  The script then says so and stops, with the phone waiting in the loader. Leave the phone as it is and:
+      Device Manager > xnuloader > Update driver > Browse my computer for drivers >
+      Let me pick from a list > Android Device > Android Bootloader Interface > Next
+  then:   powershell -ExecutionPolicy Bypass -File test-spartan.ps1 2 -FromLoader
+  (This needs the Google USB driver, the one fastboot already uses. Once is enough.)
+
+Send back
+  The whole logs\ (logs/) folder, and photos of the screen.
+
+If something goes wrong
+  - The phone freezes or the screen stays black: hold POWER for about 15 seconds; it restarts into Android.
+  - A "CrashDump" or "QUSB" screen: hold POWER + VOLUME DOWN until it restarts.
+  - ABL refuses an image: the script puts the boot slot back by itself. You can check it yourself in fastboot mode:
+        fastboot getvar current-slot
+    and if it changed:  fastboot set_active a   (or whichever slot it was before)
+
+Rules
+  - Only use the scripts or "fastboot boot". NEVER "fastboot flash" any of these images.
+  - While U-Boot or the HakiOS loader is running, do not type any "fastboot flash" or "fastboot erase" command.
+  - Do not leave the phone sitting in U-Boot or the loader: it is not charging there.
+
+Check the files first (see SHA256SUMS):
+  Windows:        certutil -hashfile stage2-hello\xnu-usb.img SHA256
+  Linux / macOS:  sha256sum -c SHA256SUMS

@@ -1,0 +1,9 @@
+# never here: the live device tree of a phone (its /chosen has the serial number), logs, built images,
+# anything of Apple's
+prebuilt/live-fdt.dtb
+logs/
+*.img
+*.bin
+*.apfs
+*.ipsw
+identity.h

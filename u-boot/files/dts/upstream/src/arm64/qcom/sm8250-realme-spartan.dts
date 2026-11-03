@@ -1,0 +1,174 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * The realme GT Neo 3T (spartan, RMX3371, SM8250-AC "Snapdragon 870") for HakiOS's U-Boot.
+ *
+ * Only what U-Boot needs: the memory the firmware and the remote processors keep, the panel's framebuffer as the
+ * bootloader left it, the keys, USB as a device (fastboot) and UFS. The reserved memory is sm8250.dtsi's and Silicium's
+ * memory map of the realme GT Neo 2 (bitra: the same SoC from the same maker, Platforms/Realme/bitraPkg/Library/
+ * MemoryMapLib/MemoryMapLib.c), whichever reserves more: sm8250.dtsi has an early kona layout, realme's firmware the
+ * later one (removed_region to 0x8d800000, the remote processors' images from 0x8da00000).
+ *
+ * Checked against the phone's own tree (/sys/firmware/fdt of an RMX3371, msm-id 356 v2.1, board-id 0x10008, OPLUS dtsi
+ * 21733, 3 November 2026; prebuilt/device-tree.dtb is that tree with /chosen emptied, which ABL fills at every boot) and
+ * the firmware's base tree (prebuilt/base-21733.dtb: that dtsi's entry of the RMX3371 firmware's boot.img, A14
+ * 14.0.0.2100): every one of their 22 fixed carve-outs falls inside what
+ * this tree and sm8250.dtsi reserve, kboot_uboot_logmem and ramoops (realme's own) with their sizes as the phone has
+ * them. Checked on the compiled tree too; again after any change here:
+ *   devices/spartan/tools/check-memory.py devices/spartan/prebuilt/device-tree.dtb u-boot/build-spartan/u-boot.dtb
+ *
+ * The keys as the phone has them: volume up on PM8150 GPIO 6, volume down on the PON's RESIN (qcom,pon_2, pon-type 1).
+ *
+ * The size of RAM is not here: ABL writes it into the device tree it hands over (the appended Android one), and U-Boot
+ * reads it from there (arch/arm/mach-snapdragon/board.c, qcom_parse_memory()).
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/linux-event-codes.h>
+#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+#include "sm8250.dtsi"
+#include "pm8150.dtsi"
+#include "pm8150b.dtsi"
+#include "pm8150l.dtsi"
+
+/ {
+	model = "realme GT Neo 3T";
+	compatible = "realme,spartan", "qcom,sm8250";
+	chassis-type = "handset";
+
+	/*
+	 * No qcom,msm-id or qcom,board-id: ABL matches the appended Android device tree, not this one, which U-Boot
+	 * keeps for itself.
+	 */
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/*
+		 * The panel as ABL left it: 1080 x 2400, 32 bits, in kona's continuous-splash memory. At 0x9C000000 the HakiOS
+		 * loader knows the phone by it (xnuloader/loader.c, efi_main()). No clocks: U-Boot keeps the display running
+		 * by not touching it.
+		 */
+		framebuffer0: framebuffer@9c000000 {
+			compatible = "simple-framebuffer";
+			reg = <0x0 0x9c000000 0x0 (1080 * 2400 * 4)>;
+			width = <1080>;
+			height = <2400>;
+			stride = <(1080 * 4)>;
+			format = "a8r8g8b8";
+		};
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-0 = <&kypd_volp_n>;
+		pinctrl-names = "default";
+
+		/* PM8150 GPIO 6, as the phone's own tree has it (gpio_keys/vol_up) */
+		key-volume-up {
+			label = "Volume Up";
+			gpios = <&pm8150_gpios 6 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_VOLUMEUP>;
+		};
+	};
+
+	reserved-memory {
+		/* Silicium's "XBL Log Buffer", after the command DB */
+		xbl_log_mem: xbl-log@80884000 {
+			reg = <0x0 0x80884000 0x0 0x10000>;
+			no-map;
+		};
+
+		/* Silicium's "TZApps Reserved": removed_region as realme's firmware has it, over sm8250.dtsi's smaller one */
+		tz_apps_mem: tz-apps@82400000 {
+			reg = <0x0 0x82400000 0x0 0xb400000>;
+			no-map;
+		};
+
+		/* Silicium's "PIL Reserved": all of the remote processors' images, with what lies between them */
+		pil_mem: pil@8da00000 {
+			reg = <0x0 0x8da00000 0x0 0xad00000>;
+			no-map;
+		};
+
+		/* the panel's memory and the display's dfps data after it */
+		cont_splash_mem: cont-splash@9c000000 {
+			reg = <0x0 0x9c000000 0x0 0x2400000>;
+			no-map;
+		};
+
+		dbi_dump_mem: dbi-dump@9e400000 {
+			reg = <0x0 0x9e400000 0x0 0xf00000>;
+			no-map;
+		};
+
+		/* realme's boot log: the phone's kboot_uboot_logmem@0x9FE00000 */
+		kboot_log_mem: kboot-log@9fe00000 {
+			reg = <0x0 0x9fe00000 0x0 0x200000>;
+			no-map;
+		};
+
+		/* the phone's ramoops@0xB0000000 */
+		ramoops_mem: ramoops@b0000000 {
+			reg = <0x0 0xb0000000 0x0 0x400000>;
+			no-map;
+		};
+
+		/*
+		 * Where the HakiOS loader takes its payload from (PAYLOAD_BASE, 64 MiB with the panic log in its last MiB).
+		 * Mapped (no no-map): the hakios command writes the payload here, and nothing else in U-Boot may take it.
+		 */
+		hakios_payload_mem: hakios-payload@f0000000 {
+			reg = <0x0 0xf0000000 0x0 0x4000000>;
+		};
+	};
+};
+
+&pm8150_gpios {
+	kypd_volp_n: kypd-volp-n-state {
+		pins = "gpio6";
+		function = PMIC_GPIO_FUNC_NORMAL;
+		power-source = <1>;
+		bias-pull-up;
+		input-enable;
+	};
+};
+
+&pon_pwrkey {
+	status = "okay";
+};
+
+&pon_resin {
+	linux,code = <KEY_VOLUMEDOWN>;
+	status = "okay";
+};
+
+/* No supplies: ABL leaves the UFS rails on, and U-Boot does not turn them off */
+&ufs_mem_hc {
+	status = "okay";
+};
+
+&ufs_mem_phy {
+	status = "okay";
+};
+
+/* USB 2.0 as a device: U-Boot's fastboot; the SuperSpeed PHY is left as ABL left it */
+&usb_1 {
+	qcom,select-utmi-as-pipe-clk;
+	status = "okay";
+};
+
+&usb_1_dwc3 {
+	dr_mode = "peripheral";
+	maximum-speed = "high-speed";
+	phys = <&usb_1_hsphy>;
+	phy-names = "usb2-phy";
+};
+
+&usb_1_hsphy {
+	status = "okay";
+};
