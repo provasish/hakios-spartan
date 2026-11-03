@@ -35,8 +35,10 @@ there.
 
 ## Building
 
-In the HakiOS tree (`hakios-xnu-kernel`), with this repository at `devices/spartan` and HakiOS's UEFI repository at `uefi`
-(branch `u-boot`), on Linux or WSL with `aarch64-linux-gnu-gcc` and `dtc`:
+In the HakiOS tree with this phone's changes, [provasish/hakios-xnu-kernel-spartan](https://github.com/provasish/hakios-xnu-kernel-spartan)
+(HakiOS's `hakios-xnu-kernel` with its history, plus the loader's spartan platform and this repository in
+`devices/manifest.conf`), with this repository at `devices/spartan` (`tools/hakios-device.py sync`) and HakiOS's UEFI
+repository at `uefi` (branch `u-boot`), on Linux or WSL with `aarch64-linux-gnu-gcc` and `dtc`:
 
 ```sh
 uefi/u-boot/apply.sh spartan          # U-Boot at uefi/u-boot/BASE, HakiOS's patch, this phone's files
@@ -46,7 +48,7 @@ python3 tools/mkubootimg.py -d spartan --no-ramdisk -o hakios-u-boot.img      # 
 ```
 
 The loader needs one change for this phone (its platform, known by the framebuffer at `0x9C000000`; and no log written to
-realme's `logdump` partition): it is not part of HakiOS yet.
+realme's `logdump` partition): commit `1853d83` of hakios-xnu-kernel-spartan, not yet in oosexgang's repository.
 
 A checkout made on Windows has CRLF line endings, which the build's shell scripts do not survive: build in WSL from a
 checkout made there.
