@@ -9,7 +9,8 @@
  * later one (removed_region to 0x8d800000, the remote processors' images from 0x8da00000).
  *
  * Checked against the phone's own tree (/sys/firmware/fdt of an RMX3371, msm-id 356 v2.1, board-id 0x10008, OPLUS dtsi
- * 21733, 3 November 2026; prebuilt/device-tree.dtb is that tree with /chosen emptied, which ABL fills at every boot) and
+ * 21733, 3 November 2026; prebuilt/device-tree.dtb is that tree with its serial number overwritten by zeros, nothing
+ * else changed: with /chosen emptied instead, ABL refuses the image) and
  * the firmware's base tree (prebuilt/base-21733.dtb: that dtsi's entry of the RMX3371 firmware's boot.img, A14
  * 14.0.0.2100): every one of their 22 fixed carve-outs falls inside what
  * this tree and sm8250.dtsi reserve, kboot_uboot_logmem and ramoops (realme's own) with their sizes as the phone has

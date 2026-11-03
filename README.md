@@ -27,7 +27,7 @@ there.
 |---|---|
 | `u-boot/files/dts/upstream/src/arm64/qcom/sm8250-realme-spartan.dts` | U-Boot's device tree of the phone: the panel's framebuffer as ABL leaves it, USB as a device, UFS, the keys, and every memory region the firmware keeps (its head says where each number comes from) |
 | `u-boot/files/configs/hakios_spartan_defconfig`, `u-boot/files/board/qualcomm/hakios-spartan.env` | U-Boot's configuration and environment, as the POCO X5 Pro's |
-| `prebuilt/device-tree.dtb` | the phone's own device tree (`/sys/firmware/fdt`, msm-id 356 v2.1, board-id 0x10008) with `/chosen` emptied (no serial number, no boot arguments): what ABL is given, appended to U-Boot. ABL picks an appended tree by msm-id **and** board-id, so it has to be a merged tree like this one |
+| `prebuilt/device-tree.dtb` | the phone's own device tree (`/sys/firmware/fdt`, msm-id 356 v2.1, board-id 0x10008) with the serial number in `/chosen` overwritten by zeros, nothing else changed: what ABL is given, appended to U-Boot. ABL picks an appended tree by msm-id **and** board-id, so it has to be a merged tree like this one; and it refuses one whose `/chosen` was emptied (tried) |
 | `prebuilt/base-21733.dtb` | the base tree of OPLUS dtsi 21733 from the RMX3371 firmware's `boot.img`, for reference: same reserved memory; **not** for appending (board-id 0 0: ABL refuses it) |
 | `prebuilt/mkbootimg.py` | AOSP's `mkbootimg.py` (Apache-2.0), as the other HakiOS devices carry it |
 | `tools/check-memory.py` | checks that U-Boot's tree reserves every fixed carve-out of the phone's tree, and prints the ids and keys ABL and U-Boot need |
@@ -68,6 +68,8 @@ Android Bootloader Interface driver picked for it once.
   the remote processors from `0x8DA00000`), not `sm8250.dtsi`'s, plus realme's own `kboot_uboot_logmem` at `0x9FE00000` and
   `ramoops` at `0xB0000000`. The DTS reserves all of them.
 - **Volume down** is the PMIC's RESIN on this phone, not a GPIO.
+- **The appended tree's `/chosen`.** A tree pulled from a phone has that phone's serial number in `/chosen/bootargs`. Mask it
+  in place (same length); deleting `/chosen`'s properties made ABL refuse the image.
 
 ## Nothing of Apple's, nothing of the phone's firmware
 
