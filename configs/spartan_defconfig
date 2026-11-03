@@ -1,0 +1,6 @@
+# HakiOS defconfig for the realme GT Neo 3T (spartan, SM8250-AC, devices/spartan): the common kernel with this phone's own drivers
+# built in and none of another phone's. The POCO X5 Pro's drivers write that phone's registers, so they are left out of the kernel,
+# not only switched off at boot (as qemu_defconfig does it).
+#include common_defconfig
+#include open.config
+#include spartan.config

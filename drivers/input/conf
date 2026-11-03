@@ -1,0 +1,7 @@
+# devices/spartan/drivers/input/conf: the realme GT Neo 3T's own input drivers (drivers/input/conf has the common ones).
+# CONFIG_HAKIOS_<NAME>=y in a defconfig builds a driver into the kernel; docs/drivers-config.md says what each word means.
+
+driver FT3658U
+	file    bsd/dev/hakios.ft3658u.c
+	help    the touch screen of the realme GT Neo 3T: a FocalTech FT3658U on I2C, serial engine 13 (ft3658u=1). The bus,
+	help    pins and supplies are this phone's
