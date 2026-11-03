@@ -16,10 +16,12 @@ Seen on an RMX3371 (unlocked bootloader, A14 firmware 14.0.0.2100), 3 November 2
 | 1 | HakiOS's U-Boot, started by ABL from RAM | **works**: ABL takes the image; U-Boot's console on the panel (1080x2400 at `0x9C000000`), UFS (6 LUNs, HS gear 3), fastboot over USB (`18d1:4ee0`), the buttons registered; the A/B slots untouched |
 | 2 | the HakiOS loader and the open XNU kernel, running `hello` | **works**: the loader knows the phone (`platform spartan`), the kernel boots (GICv3, md0 root) and prints "Hello from user space on Darwin!", then hands the phone back |
 | 2, `cpus=8` | the same on every core | **works**: 8 cores registered, the boot core and the four Cortex-A77s online through PSCI ("5 of 8 processors are running"; the A55s 1-3 registered, not started), `hello` on cpu 5 |
-| 3 | Darwin's own user space from RAM (launchd, SpringBoard) | not yet tried |
+| 3 | Darwin userland 16.5's own user space from RAM (launchd, backboardd, SpringBoard) | **works**: the 2.5 GB system image sent into the loader's resident area (76 s over USB), `rd=md0 cpus=8`, no phone driver started; launchd spawns backboardd and SpringBoard, the lock screen is swiped away by the image's own job (`RC_JOBS=rc.jobs.unlock`: a synthetic touch through `/dev/hakios-touch`, no touch driver), and **the home screen is drawn in software** on the panel; 180 s later the kernel hands the phone back (no panic). While Darwin runs, the loader does not answer on USB on this phone (`no link`): the log and the screen are fetched after the return |
 
 No driver of the phone's is ported yet: the screen is drawn in software; touch, GPU, sound, Wi-Fi and the rest are not
-there.
+there. Stage 3 needs each person's own Darwin userland 16.5 IPSW (iPhone10,3/10,6, 20F66) and HakiOS's build
+(`sysimage/unpack.sh`, `PREBUILT=1 REST=1 SYSTEM=1 RC_JOBS=rc.jobs.unlock userland/build.sh`, `make loader`): nothing of it
+is in this repository.
 
 ## What is here
 
