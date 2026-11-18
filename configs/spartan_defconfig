@@ -3,4 +3,5 @@
 # not only switched off at boot (as qemu_defconfig does it).
 #include common_defconfig
 #include open.config
+#include sm8250.config
 #include spartan.config
