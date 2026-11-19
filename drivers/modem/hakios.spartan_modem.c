@@ -1724,7 +1724,13 @@ sahara_read_data(uint32_t id, uint64_t offset, uint64_t length)
 	if (option_efs && (id == 16 || id == 17 || id == 20)) {
 		/* the EFS images: what the phone's Android keeps in its mdm1m9kefs partitions, read only (the stubs of the firmware partition are 512 bytes of nothing) */
 		static uint8_t part_chunk[0x2000];
-		static const char *const names[] = { "mdm1m9kefs1", "mdm1m9kefs2", NULL, NULL, "mdm1m9kefs3" };
+		/*
+		 * spartan: image 20 is not mdm1m9kefs3 but mdm1oemnvbktmp. realme's mdm_helper (liboemnvbk_img_helper.so) builds
+		 * that partition at each boot from the phone's static and dynamic NV backups (oplusstanvbk, oplusdycnvbk: the IMEI,
+		 * the board's RF data) and maps it to image 20 (oemnvbk_add_map_config: "20:.../mdm1oemnvbktmp"). Sent the plain
+		 * third EFS instead, the modem came up with no IMEI and the network refused it ("Illegal UE", 19 November).
+		 */
+		static const char *const names[] = { "mdm1m9kefs1", "mdm1m9kefs2", NULL, NULL, "mdm1oemnvbktmp" };
 		uint64_t base, bytes;
 
 		if (!gpt_find(5, names[id - 16], &base, &bytes)) {
