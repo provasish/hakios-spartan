@@ -1,0 +1,8 @@
+# devices/spartan/drivers/power/conf: the realme GT Neo 3T's own battery driver (drivers/power/conf has the common ones).
+# CONFIG_HAKIOS_<NAME>=y in a defconfig builds a driver into the kernel; docs/drivers-config.md says what each word means.
+
+driver SPARTAN_BATTERY
+	file    bsd/dev/hakios.spartan_battery.c
+	requires BATTERY
+	help    the battery's charge from the phone's TI bq27541 fuel gauge (I2C 0x55, serial engine 16), read only, for the
+	help    status bar and Settings > Battery (spartan_battery=1). Nothing is written to the gauge or the charger
