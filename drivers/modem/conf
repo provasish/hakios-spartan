@@ -1,0 +1,9 @@
+# devices/spartan/drivers/modem/conf: the realme GT Neo 3T's own modem driver (drivers/modem/conf has the common ones).
+# CONFIG_HAKIOS_<NAME>=y in a defconfig builds a driver into the kernel; docs/drivers-config.md says what each word means.
+
+driver SPARTAN_MODEM
+	file    bsd/dev/hakios.spartan_modem.c
+	requires MHI QMI WIFI
+	help    the external Snapdragon X55 modem on PCIe 2 (modem=N): its lines, PCIe 2, the boot ROM and Sahara from the firmware in
+	help    the system image (/fw/modem), QRTR, QMI (SIM, registration, SMS, data as en1). Ported from the OnePlus 8 port's
+	help    instantnoodle_modem.c (APSL 2.0); needs fw-modem/image from the phone and MODEM=1 images
