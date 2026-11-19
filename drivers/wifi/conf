@@ -1,0 +1,9 @@
+# devices/spartan/drivers/wifi/conf: the realme GT Neo 3T's own Wi-Fi driver (drivers/wifi/conf has the common ones).
+# CONFIG_HAKIOS_<NAME>=y in a defconfig builds a driver into the kernel; docs/drivers-config.md says what each word means.
+
+driver SPARTAN_WIFI
+	file    bsd/dev/hakios.spartan_wifi.c
+	requires WIFI
+	help    the QCA6390 Wi-Fi radio on PCIe 0 (wifi=1): its supplies, WLAN_EN, PCIe 0's clocks, PHY and link, and the
+	help    device's configuration space and BAR for ath11k's pci.c (sys/hakios.pcie_wifi.h). After the OnePlus 8 port's
+	help    instantnoodle_wifi.c; needs fw-wifi/ (linux-firmware's amss.bin and m3.bin, the phone's bdwlan.elf)
