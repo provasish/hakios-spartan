@@ -1,0 +1,12 @@
+# devices/spartan/bootargs: the kernel arguments every run on the realme GT Neo 3T gets (xl appends them after
+# XL_CMDLINE, so an argument given there comes first and wins; XL_DEFAULTS=0 leaves these out). One or more per line.
+cpus=8 bootcpu=7 cpufreq=1
+ft3658u=1
+gpu=1 fb_push=1
+# 120 Hz: the panel's TE runs at 120 already; a second panel buffer lets the GPU draw while the last frame is pushed
+fb_hz=120 fb_double=1
+# battery percentage from the ZY0603 fuel gauge (drivers/power, read only)
+spartan_battery=1
+# the X55 modem: LTE on Jio and mobile data on en1 (needs the modem firmware in the image: MODEM=1)
+modem=5 modem_quiet=3 modem_chans=2185 modem_bringup=1 modem_tftp=1 modem_blk=1024 modem_efs=1 modem_service=1
+modem_qrtr=100000000 modem_modes=0x1c modem_data=1 modem_apn=jionet
